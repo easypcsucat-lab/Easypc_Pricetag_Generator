@@ -67,7 +67,7 @@ h2{ font-size:20px; margin:34px 0 12px; padding-bottom:6px; border-bottom:3px so
 .btn:disabled.empty{ cursor:not-allowed; }
 @media (max-width:640px){ .inputs.two{ grid-template-columns:1fr; } }
 .mtable{ border:1px solid var(--line); border-radius:10px; background:var(--surface); padding:10px 12px; }
-.mhead,.mrow{ display:grid; grid-template-columns:28px minmax(0,1fr) 150px 170px 40px; gap:8px; align-items:center; }
+.mhead,.mrow{ display:grid; grid-template-columns:28px 120px minmax(0,1fr) 140px 160px 40px; gap:8px; align-items:center; }
 .mhead{ font-size:13px; font-weight:700; color:var(--ink-2); padding:2px 0 8px; }
 .mrow{ padding:4px 0; }
 .mrow .no{ color:var(--ink-3); font-size:13px; text-align:right; }
@@ -80,8 +80,8 @@ h2{ font-size:20px; margin:34px 0 12px; padding-bottom:6px; border-bottom:3px so
 .hint{ color:var(--ink-3); font-size:13px; }
 @media (max-width:640px){
   .mhead{ display:none; }
-  .mrow{ grid-template-columns:24px 1fr 1fr 40px; grid-template-areas:"no name name rm" ". price disc ."; padding:8px 0; border-bottom:1px solid var(--line); }
-  .mrow .no{ grid-area:no; } .mrow .nm{ grid-area:name; } .mrow .pr{ grid-area:price; } .mrow .ds{ grid-area:disc; } .mrow .rm{ grid-area:rm; }
+  .mrow{ grid-template-columns:24px 1fr 1fr 40px; grid-template-areas:"no name name rm" ". sku sku ." ". price disc ."; padding:8px 0; border-bottom:1px solid var(--line); }
+  .mrow .no{ grid-area:no; } .mrow .nm{ grid-area:name; } .mrow .sk{ grid-area:sku; } .mrow .pr{ grid-area:price; } .mrow .ds{ grid-area:disc; } .mrow .rm{ grid-area:rm; }
 }
 .err{ margin-top:14px; padding:12px 16px; border-left:4px solid var(--red); background:var(--surface); color:var(--ink); border-radius:4px; }
 .hidden{ display:none !important; }
@@ -104,6 +104,7 @@ h2{ font-size:20px; margin:34px 0 12px; padding-bottom:6px; border-bottom:3px so
 .size legend{ font-weight:700; padding:0 6px; color:var(--ink); }
 .size label{ display:flex; gap:10px; align-items:flex-start; padding:6px 0; cursor:pointer; color:var(--ink); }
 .size input{ margin-top:5px; accent-color:var(--green); width:18px; height:18px; flex:none; }
+.size + .size{ margin-top:14px; }
 .size small{ display:block; color:var(--ink-3); font-size:13px; line-height:1.4; }
 .filter{ display:flex; gap:8px; margin:4px 0 14px; flex-wrap:wrap; }
 .filter button[aria-pressed="true"]{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
@@ -185,7 +186,7 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
   </div>
   <div id="manualIn" class="inputs hidden">
     <div class="mtable">
-      <div class="mhead" aria-hidden="true"><span>#</span><span>Product name</span><span>Sales Price (₱)</span><span>Discount Price (₱)</span><span></span></div>
+      <div class="mhead" aria-hidden="true"><span>#</span><span>MSKU</span><span>Product name</span><span>Sales Price (₱)</span><span>Discount Price (₱)</span><span></span></div>
       <div id="mrows"></div>
     </div>
     <div class="mactions">
@@ -201,6 +202,11 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
     <div class="counts" id="counts"></div>
     <p class="source" id="source"></p>
     <div class="callout hidden" id="checkNote"></div>
+
+    <fieldset class="size">
+      <legend>Show on tag</legend>
+      <label><input type="checkbox" id="optSku" checked><span>Internal Reference, printed as MSKU:10030<small>White in the top black bar on regular tags, black at the bottom left of SALE tags, in line with the original price. For typed-by-hand tags, fill in the MSKU column; leave it blank and nothing shows.</small></span></label>
+    </fieldset>
 
     <fieldset class="size">
       <legend>Tags per A4 sheet</legend>
@@ -264,7 +270,7 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
           <li>At the top of this page, choose <b>All tags from one file</b>.</li>
           <li>Drop the Excel file in the box, or click it to choose the file.</li>
           <li>Check the counts and the preview. Open <b>Products left out</b> to see what was skipped.</li>
-          <li>Choose how many tags per A4 sheet.</li>
+          <li>Under <b>Show on tag</b>, tick or untick the MSKU, then choose how many tags per A4 sheet.</li>
           <li>Click <b>Download Word file</b>.</li>
         </ol>
       </div>
@@ -283,7 +289,7 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
         <h3>Type tags by hand</h3>
         <ol>
           <li>Choose <b>Type tags by hand</b>.</li>
-          <li>Type the product name and Sales Price.</li>
+          <li>Type the MSKU (the Internal Reference, optional), the product name and the Sales Price.</li>
           <li>For a sale, also type the Discount Price. Leave it blank for a regular tag.</li>
           <li>Click <b>Add row</b>, or press Enter in the last box, for more tags.</li>
           <li>Check the preview, choose tags per sheet and click <b>Download Word file</b>.</li>
@@ -348,13 +354,15 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
     p1: {
       name: { x: 92, w: 880, align: 'center', top: 150, bottom: 338, center: 248, anchor: 'center',
               s1: 86, s2: 49, min2: 26, color: '000000' },
-      price: { cx: 535, maxW: 900, baseline: 514, sd: 219, pesoRatio: 0.745, gap: 0.05 }
+      price: { cx: 535, maxW: 900, baseline: 514, sd: 219, pesoRatio: 0.745, gap: 0.05 },
+      sku: { x: 470, w: 560, align: 'right', baseline: 52.5, s: 40, color: 'FFFFFF' }   // white, inside the top black bar
     },
     p2: {
       name: { x: 40, w: 660, align: 'left', top: 48, bottom: 208, capTop: 81, anchor: 'top',
               s1: 60, s2: 33, min2: 22, color: '53B247' },
       price: { cx: 508, maxW: 880, baseline: 384, sd: 214, pesoRatio: 0.687, gap: 0.0 },
-      orig: { cx: 517, baseline: 537, s: 77, maxW: 440, pesoRatio: 0.8, gap: 0.12 }
+      orig: { cx: 517, baseline: 537, s: 77, maxW: 440, pesoRatio: 0.8, gap: 0.12 },
+      sku: { x: 40, w: 240, align: 'left', baseline: 537, s: 30, color: '000000' }      // black, bottom-left white space, in line with the original price
     }
   };
 
@@ -526,12 +534,23 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
              frameTop: sp.baseline - (LH - KAPPA) * s,
              line: { x: sp.cx - w / 2 - 6, w: w + 12, y: sp.baseline - 0.25 * s, h: Math.max(4, 0.105 * s) } };
   }
-  function layout(tag, m) {
+  function layoutSku(ref, sp, m) {
+    var txt = 'MSKU:' + String(ref).trim(), s = sp.s, w = m(txt, 'name', s);
+    if (w > sp.w) { s *= sp.w / w; w = sp.w; }
+    return { txt: txt, s: s, x: sp.x, w: sp.w, align: sp.align, color: sp.color, frameTop: sp.baseline - (LH - KAPPA) * s };
+  }
+  // opts.sku: print the Internal Reference as MSKU:#### (only when the product has one)
+  function layout(tag, m, opts) {
+    var showSku = opts && opts.sku && tag.ref && String(tag.ref).trim();
+    var L;
     if (tag.design === 2) {
-      return { design: 2, name: layoutName(tag.name, SPEC.p2.name, m),
-               price: layoutPrice(tag.disc, SPEC.p2.price, m), orig: layoutOrig(tag.price, SPEC.p2.orig, m) };
+      L = { design: 2, name: layoutName(tag.name, SPEC.p2.name, m),
+            price: layoutPrice(tag.disc, SPEC.p2.price, m), orig: layoutOrig(tag.price, SPEC.p2.orig, m) };
+    } else {
+      L = { design: 1, name: layoutName(tag.name, SPEC.p1.name, m), price: layoutPrice(tag.price, SPEC.p1.price, m) };
     }
-    return { design: 1, name: layoutName(tag.name, SPEC.p1.name, m), price: layoutPrice(tag.price, SPEC.p1.price, m) };
+    if (showSku) L.sku = layoutSku(tag.ref, (tag.design === 2 ? SPEC.p2 : SPEC.p1).sku, m);
+    return L;
   }
 
   // ---------- DOCX ----------
@@ -586,6 +605,10 @@ footer{ border-top:1px solid var(--line); color:var(--ink-3); font-size:13px; pa
       var o = L.orig, ow = o.width + 60;
       var oPeso = rpr(FONT_PESO, o.sp, '000000', '<w:b/><w:bCs/>', '<w:spacing w:val="' + Math.round(o.gap * PX_PT * 20) + '"/><w:position w:val="' + hp(o.raise) + '"/>');
       out += para(frame(o.cx - ow / 2, o.frameTop, ow, LH * o.s + 4, slot), 'center', LH, o.s, run('₱', oPeso) + run(o.txt, rpr(FONT_PRICE, o.s, '000000')));
+    }
+    if (L.sku) {  // written last so Word never groups it with the name frame
+      var k = L.sku;
+      out += para(frame(k.x, k.frameTop, k.w, LH * k.s + 4, slot), k.align, LH, k.s, run(k.txt, rpr(FONT_NAME, k.s, k.color)));
     }
     return out;
   }
@@ -753,7 +776,7 @@ function tt(){
   function run(){
     if (state.mode==='manual') {
       var list = readManual();
-      var c0 = TagCore.classify([HEAD].concat(list.map(function(r){ return ['', '', r.name, null, r.price, r.disc]; })));
+      var c0 = TagCore.classify([HEAD].concat(list.map(function(r){ return [r.sku, '', r.name, null, r.price, r.disc]; })));
       if (!c0.tags.length && !c0.skipped.length) { $('result').classList.add('hidden'); return; }
       var sale0 = c0.tags.filter(function(t){ return t.design===2; }).length;
       return render({ tags:c0.tags, skipped:c0.skipped, check:c0.check, discHeaderOk:true, discHeader:'', rowOffset:1, rowWord:'Line',
@@ -796,11 +819,12 @@ function tt(){
   function mrow(d){
     var r=document.createElement('div'); r.className='mrow';
     r.innerHTML='<span class="no"></span>' +
+      '<input class="sk" type="text" inputmode="numeric" placeholder="optional" aria-label="MSKU (Internal Reference), optional">' +
       '<input class="nm" type="text" placeholder="e.g. ASUS TUF Gaming B660M-Plus D4" aria-label="Product name">' +
       '<input class="pr num" type="text" inputmode="decimal" placeholder="12,499" aria-label="Sales Price">' +
       '<input class="ds num" type="text" inputmode="decimal" placeholder="optional" aria-label="Discount Price">' +
       '<button class="rm" type="button" aria-label="Remove row" title="Remove row">×</button>';
-    if (d){ r.querySelector('.nm').value=d.name||''; r.querySelector('.pr').value=d.price||''; r.querySelector('.ds').value=d.disc||''; }
+    if (d){ r.querySelector('.sk').value=d.sku||''; r.querySelector('.nm').value=d.name||''; r.querySelector('.pr').value=d.price||''; r.querySelector('.ds').value=d.disc||''; }
     r.querySelector('.rm').addEventListener('click', function(){ r.remove(); if (!$('mrows').children.length) addRow(); renumber(); changed(); });
     r.querySelectorAll('input').forEach(function(inp){ inp.addEventListener('input', changed); });
     r.querySelector('.ds').addEventListener('keydown', function(e){
@@ -812,7 +836,7 @@ function tt(){
   function addRow(d){ var r=mrow(d); $('mrows').appendChild(r); renumber(); return r; }
   function readManual(){
     return Array.prototype.map.call($('mrows').children, function(r){
-      return { name:r.querySelector('.nm').value.trim(), price:r.querySelector('.pr').value.trim(), disc:r.querySelector('.ds').value.trim() };
+      return { sku:r.querySelector('.sk').value.trim().replace(/^msku\s*:?\s*/i,''), name:r.querySelector('.nm').value.trim(), price:r.querySelector('.pr').value.trim(), disc:r.querySelector('.ds').value.trim() };
     });
   }
   function changed(){
@@ -841,7 +865,7 @@ function tt(){
   function cell(tr, v, cls){ var td=document.createElement('td'); td.textContent=v==null?'':v; if(cls) td.className=cls; tr.appendChild(td); }
   function render(v){
     state.tags = v.tags; state.extra = v.extra || {}; state.rowOffset = v.rowOffset || 0; state.rowWord = v.rowWord || 'Row';
-    state.layouts = v.tags.map(function(t){ return TagCore.layout(t, measure); });
+    state.layouts = v.tags.map(function(t){ return TagCore.layout(t, measure, tagOpts()); });
     $('resTitle').textContent = v.title;
     var box=$('counts'); box.innerHTML='';
     v.counts.forEach(function(c){
@@ -879,6 +903,14 @@ function tt(){
     setFilter('all');
   }
 
+  var OKEY = 'easypc-price-tags-options-v1';
+  try { var so = JSON.parse(localStorage.getItem(OKEY) || 'null'); if (so && typeof so.sku === 'boolean') $('optSku').checked = so.sku; } catch(e) {}
+  function tagOpts(){ return { sku: $('optSku').checked }; }
+  $('optSku').addEventListener('change', function(){
+    try { localStorage.setItem(OKEY, JSON.stringify(tagOpts())); } catch(e) {}
+    if (state.tags.length) { state.layouts = state.tags.map(function(t){ return TagCore.layout(t, measure, tagOpts()); }); setFilter(state.filter); $('status').textContent=''; }
+  });
+
   function perPage(){ var r=document.querySelector('input[name="per"]:checked'); return r ? +r.value : 6; }
   function updatePages(){ var el=$('cPages'); if (el) el.textContent = Math.ceil(state.tags.length / perPage()); }
   document.querySelectorAll('input[name="per"]').forEach(function(r){ r.addEventListener('change', function(){ updatePages(); if (state.tags.length) $('status').textContent=''; }); });
@@ -908,6 +940,7 @@ function tt(){
   }
   function tagEl(L){
     var t=document.createElement('div'); t.className='tag'; t.style.backgroundImage='url(' + bgUrl[L.design] + ')';
+    if (L.sku) { var k=L.sku, kb=box(t, k.x, k.frameTop, k.w, k.align); line(kb, k.txt, k.s, 'TagName, Arial Black, sans-serif', k.color); }
     var n=L.name, nb=box(t, n.x, n.frameTop, n.w, n.align);
     line(nb, n.l1, n.s1, 'TagName, Arial Black, sans-serif', n.color);
     if (n.l2) line(nb, n.l2, n.s2, 'TagName, Arial Black, sans-serif', n.color);
